@@ -6,6 +6,7 @@ import 'package:geolocator/geolocator.dart';
 
 //creating Weather Service
 class WeatherService {
+  final String localeIdentifier = 'en';
   final Dio _dio = Dio();
   final String _baseUrl = 'https://api.openweathermap.org/data/2.5/weather';
   final String apiKey;
@@ -42,17 +43,35 @@ class WeatherService {
 
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        throw "Location permission denied. Please enable location services.";
+      }
     }
-    // fetch the cureent location
+
+    if (permission == LocationPermission.deniedForever) {
+      throw "Location permission denied forever. Please enable it in app settings.";
+    }
+
+    // Check if location services are enabled
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      throw "Location services are disabled. Please enable location services.";
+    }
+
+    // fetch the current location
     Position position = await Geolocator.getCurrentPosition();
 
-    //convert the location into a list of placemarks
+    //convert the location into a list of placemarks using the new API
     List<Placemark> placemarks = await placemarkFromCoordinates(
       position.latitude,
       position.longitude,
     );
 
-    //extract the city name from the frist placemark
+    //extract the city name from the first placemark
+    if (placemarks.isEmpty) {
+      throw "Could not determine city name from location.";
+    }
+
     String? city = placemarks[0].locality;
     return city ?? '';
   }
