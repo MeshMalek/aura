@@ -16,7 +16,11 @@ class WeatherService {
     try {
       final response = await _dio.get(
         _baseUrl,
-        queryParameters: {'q': cityName, 'appid': apiKey, 'units': 'metric'},
+        queryParameters: {
+          'q': cityName,
+          'appid': 'ba0265bf7691d490f99256a8aa59ed98',
+          'units': 'metric',
+        },
       );
       // checking the server recive request or not
       if (response.statusCode == 200) {
@@ -31,22 +35,25 @@ class WeatherService {
     }
     throw Exception('Failed to fetch weather data');
   }
-}
-// get permission from user
-Future<String> getCurrentCity() async {
-  LocationPermission permission = await Geolocator.checkPermission();
 
-  if (permission == LocationPermission.denied) {
-    permission = await Geolocator.requestPermission();
+  // get permission from user
+  Future<String> getCurrentCity() async {
+    LocationPermission permission = await Geolocator.checkPermission();
+
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
+    // fetch the cureent location
+    Position position = await Geolocator.getCurrentPosition();
+
+    //convert the location into a list of placemarks
+    List<Placemark> placemarks = await placemarkFromCoordinates(
+      position.latitude,
+      position.longitude,
+    );
+
+    //extract the city name from the frist placemark
+    String? city = placemarks[0].locality;
+    return city ?? '';
   }
-  // fetch the cureent location
-  Position position = await Geolocator.getCurrentPosition();
-
-  //convert the location into a list of placemarks
-List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
-
-//extract the city name from the frist placemark
-String? city =placemarks[0].locality;
-return city?? '';
-
 }

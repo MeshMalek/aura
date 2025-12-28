@@ -1,5 +1,5 @@
 
-import 'package:aura/views/home_view.dart';
+import 'package:aura/views/weather_page.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(title: 'Aura Weather Check',
     debugShowCheckedModeBanner: false,
-      home: HomeView(),
+      home: WeatherPage(),
     );
     
   }
