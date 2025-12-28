@@ -71,8 +71,14 @@ class WeatherService {
     if (placemarks.isEmpty) {
       throw "Could not determine city name from location.";
     }
+    Placemark place = placemarks[0];
+    // Try different fields in order of preference
+    String? city =
+        place.locality ??
+        place.subLocality ??
+        place.administrativeArea ??
+        place.name;
 
-    String? city = placemarks[0].locality;
     return city ?? '';
   }
 }
