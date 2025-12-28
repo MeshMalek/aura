@@ -1,6 +1,8 @@
 import 'package:aura/models/weather_model.dart';
 import 'package:aura/services/erorr_handler.dart';
 import 'package:dio/dio.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 
 //creating Weather Service
 class WeatherService {
@@ -23,10 +25,28 @@ class WeatherService {
       } else {
         // Handle non-200 status codes
         HttpErrorHandler.handleStatusCode(response.statusCode);
-    }
+      }
     } on DioException catch (e) {
       HttpErrorHandler.handleDioException(e);
     }
     throw Exception('Failed to fetch weather data');
   }
+}
+// get permission from user
+Future<String> getCurrentCity() async {
+  LocationPermission permission = await Geolocator.checkPermission();
+
+  if (permission == LocationPermission.denied) {
+    permission = await Geolocator.requestPermission();
+  }
+  // fetch the cureent location
+  Position position = await Geolocator.getCurrentPosition();
+
+  //convert the location into a list of placemarks
+List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
+
+//extract the city name from the frist placemark
+String? city =placemarks[0].locality;
+return city?? '';
+
 }
