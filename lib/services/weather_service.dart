@@ -1,4 +1,5 @@
 import 'package:aura/models/weather_model.dart';
+import 'package:aura/services/erorr_handler.dart';
 import 'package:dio/dio.dart';
 
 //creating Weather Service
@@ -21,38 +22,11 @@ class WeatherService {
         // Success
       } else {
         // Handle non-200 status codes
-        switch (response.statusCode) {
-          case 400:
-            throw "Bad Request: Check the city name.";
-          case 401:
-            throw "Unauthorized: Check your API Key.";
-          case 404:
-            throw "City not found.";
-          case 500:
-            throw "Server is currently crashing.";
-          default:
-            throw "Oops! Something went wrong: ${response.statusCode}";
-        }
-      }
-    } on DioException catch (e) {
-      // Handle Dio errors (network issues, etc.)
-      if (e.response != null) {
-        switch (e.response?.statusCode) {
-          case 400:
-            throw "Bad Request: Check the city name.";
-          case 401:
-            throw "Unauthorized: Check your API Key.";
-          case 404:
-            throw "City not found.";
-          case 500:
-            throw "Server is currently crashing.";
-          default:
-            throw "Oops! Something went wrong: ${e.response?.statusCode}";
-        }
-      } else {
-        // Something happened in setting up or sending the request
-        throw "Check your internet connection!";
-      }
+        HttpErrorHandler.handleStatusCode(response.statusCode);
     }
+    } on DioException catch (e) {
+      HttpErrorHandler.handleDioException(e);
+    }
+    throw Exception('Failed to fetch weather data');
   }
 }
