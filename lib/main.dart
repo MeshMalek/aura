@@ -1,4 +1,3 @@
-
 import 'package:aura/views/weather_page.dart';
 import 'package:flutter/material.dart';
 
@@ -12,10 +11,12 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(title: 'Aura Weather Check',
-    debugShowCheckedModeBanner: false,
+    return MaterialApp(
+      title: 'Aura Weather Check',
+      debugShowCheckedModeBanner: false,
+      themeMode: ThemeMode.dark,
+      darkTheme: ThemeData.dark(useMaterial3: true),
       home: WeatherPage(),
     );
-    
   }
 }

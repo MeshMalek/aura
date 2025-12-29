@@ -50,7 +50,7 @@ class _WeatherPageState extends State<WeatherPage> {
   }
 
   // weather animation
-  String getWeatherAnimation(String? mainCondition) {
+  String _getWeatherAnimation(String? mainCondition) {
     if (mainCondition == null) return 'assets/lottie/sun.json';
     switch (mainCondition.toLowerCase()) {
       case 'clouds':
@@ -73,7 +73,6 @@ class _WeatherPageState extends State<WeatherPage> {
     }
   }
 
-  // init state
   @override
   void initState() {
     super.initState();
@@ -89,68 +88,74 @@ class _WeatherPageState extends State<WeatherPage> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             if (_isLoading)
-              const Column(
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('Loading weather...'),
-                ],
-              )
+              _buildLoadingUI()
             else if (_errorMessage != null)
-              Column(
-                children: [
-                  const Icon(Icons.error_outline, size: 48, color: Colors.red),
-                  const SizedBox(height: 16),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(
-                      _errorMessage!,
-                      style: const TextStyle(fontSize: 16, color: Colors.red),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: _fetchWeather,
-                    child: const Text('Retry'),
-                  ),
-                ],
-              )
-            else if (_weather != null) ...[
-              // city name
-              Text(
-                _weather!.cityName,
-                style: const TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 16),
-              // animation
-              Lottie.asset(
-                getWeatherAnimation(_weather!.mainCondition),
-                width: 200,
-                height: 200,
-              ),
-              const SizedBox(height: 16),
-              // temperature
-              Text(
-                '${_weather!.temperature.round()}°C',
-                style: const TextStyle(
-                  fontSize: 48,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              // weather condition
-              Text(
-                _weather!.mainCondition,
-                style: const TextStyle(fontSize: 20),
-              ),
-            ],
+              _buildErrorUI()
+            else if (_weather != null)
+              _buildWeatherUI(),
           ],
         ),
       ),
+    );
+  }
+
+  // Helper method for loading state
+  Widget _buildLoadingUI() {
+    return const Column(
+      children: [
+        CircularProgressIndicator(),
+        SizedBox(height: 16),
+        Text('Loading weather...'),
+      ],
+    );
+  }
+
+  // Helper method for error state
+  Widget _buildErrorUI() {
+    return Column(
+      children: [
+        const Icon(Icons.error_outline, size: 48, color: Colors.red),
+        const SizedBox(height: 16),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Text(
+            _errorMessage!,
+            style: const TextStyle(fontSize: 16, color: Colors.red),
+            textAlign: TextAlign.center,
+          ),
+        ),
+        const SizedBox(height: 16),
+        ElevatedButton(onPressed: _fetchWeather, child: const Text('Retry')),
+      ],
+    );
+  }
+
+  // Helper method for weather display
+  Widget _buildWeatherUI() {
+    return Column(
+      children: [
+        // city name
+        Text(
+          _weather!.cityName,
+          style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 16),
+        // animation
+        Lottie.asset(
+          _getWeatherAnimation(_weather!.mainCondition),
+          width: 200,
+          height: 200,
+        ),
+        const SizedBox(height: 16),
+        // temperature
+        Text(
+          '${_weather!.temperature.round()}°C',
+          style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        // weather condition
+        Text(_weather!.mainCondition, style: const TextStyle(fontSize: 20)),
+      ],
     );
   }
 }

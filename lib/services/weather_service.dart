@@ -59,7 +59,9 @@ class WeatherService {
 
     // fetch the current location with timeout (max 10 seconds)
     return await Geolocator.getCurrentPosition(
-      timeLimit: const Duration(seconds: 10),
+      locationSettings: const LocationSettings(
+        timeLimit: Duration(seconds: 10),
+      ),
     );
   }
 
