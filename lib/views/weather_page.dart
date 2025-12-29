@@ -1,7 +1,9 @@
 import 'package:aura/models/weather_model.dart';
 import 'package:aura/services/weather_service.dart';
+import 'package:aura/widgets/erorr_weather_widget.dart';
+import 'package:aura/widgets/loading_weather_widget.dart';
+import 'package:aura/widgets/weather_disblay_widget.dart';
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
 
 class WeatherPage extends StatefulWidget {
   const WeatherPage({super.key});
@@ -49,30 +51,6 @@ class _WeatherPageState extends State<WeatherPage> {
     }
   }
 
-  // weather animation
-  String _getWeatherAnimation(String? mainCondition) {
-    if (mainCondition == null) return 'assets/lottie/sun.json';
-    switch (mainCondition.toLowerCase()) {
-      case 'clouds':
-      case 'mist':
-      case 'smoke':
-      case 'haze':
-      case 'dust':
-      case 'fog':
-        return 'assets/cloud.json';
-      case 'rain':
-      case 'drizzle':
-      case 'shower rain':
-        return 'assets/Weather-windy.json';
-      case 'thunderstorm':
-        return 'assets/storm.json';
-      case 'clear':
-        return 'assets/sun.json';
-      default:
-        return 'assets/sun.json';
-    }
-  }
-
   @override
   void initState() {
     super.initState();
@@ -88,74 +66,17 @@ class _WeatherPageState extends State<WeatherPage> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             if (_isLoading)
-              _buildLoadingUI()
+              const LoadingWeatherWidget()
             else if (_errorMessage != null)
-              _buildErrorUI()
+              ErrorWeatherWidget(
+                errorMessage: _errorMessage!,
+                onRetry: _fetchWeather,
+              )
             else if (_weather != null)
-              _buildWeatherUI(),
+              WeatherDisplayWidget(weather: _weather!),
           ],
         ),
       ),
-    );
-  }
-
-  // Helper method for loading state
-  Widget _buildLoadingUI() {
-    return const Column(
-      children: [
-        CircularProgressIndicator(),
-        SizedBox(height: 16),
-        Text('Loading weather...'),
-      ],
-    );
-  }
-
-  // Helper method for error state
-  Widget _buildErrorUI() {
-    return Column(
-      children: [
-        const Icon(Icons.error_outline, size: 48, color: Colors.red),
-        const SizedBox(height: 16),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text(
-            _errorMessage!,
-            style: const TextStyle(fontSize: 16, color: Colors.red),
-            textAlign: TextAlign.center,
-          ),
-        ),
-        const SizedBox(height: 16),
-        ElevatedButton(onPressed: _fetchWeather, child: const Text('Retry')),
-      ],
-    );
-  }
-
-  // Helper method for weather display
-  Widget _buildWeatherUI() {
-    return Column(
-      children: [
-        // city name
-        Text(
-          _weather!.cityName,
-          style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 16),
-        // animation
-        Lottie.asset(
-          _getWeatherAnimation(_weather!.mainCondition),
-          width: 200,
-          height: 200,
-        ),
-        const SizedBox(height: 16),
-        // temperature
-        Text(
-          '${_weather!.temperature.round()}°C',
-          style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 8),
-        // weather condition
-        Text(_weather!.mainCondition, style: const TextStyle(fontSize: 20)),
-      ],
     );
   }
 }
