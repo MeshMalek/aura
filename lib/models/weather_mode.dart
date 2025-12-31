@@ -1,0 +1,2 @@
+enum WeatherMode { location, city }
+

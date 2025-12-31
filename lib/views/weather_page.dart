@@ -2,7 +2,9 @@ import 'package:aura/models/weather_model.dart';
 import 'package:aura/services/weather_service.dart';
 import 'package:aura/widgets/loading_weather_widget.dart';
 import 'package:aura/widgets/erorr_weather_widget.dart';
+import 'package:aura/widgets/search_city_widget.dart';
 import 'package:aura/widgets/weather_disblay_widget.dart';
+import 'package:aura/models/weather_mode.dart';
 import 'package:flutter/material.dart';
 
 class WeatherPage extends StatefulWidget {
@@ -16,58 +18,109 @@ class _WeatherPageState extends State<WeatherPage> {
   final _weatherService = WeatherService(
     apiKey: 'ba0265bf7691d490f99256a8aa59ed98',
   );
-  Weather? _weather;
-  bool _isLoading = true;
-  String? _errorMessage;
+  Weather? weather;
+  bool isLoading = true;
+  String? errorMessage;
+  WeatherMode mode = WeatherMode.location;
+  String city = '';
 
-  Future<void> _fetchWeather() async {
+  Future<void> fetchWeather() async {
     setState(() {
-      _isLoading = true;
-      _errorMessage = null;
+      isLoading = true;
+      errorMessage = null;
     });
 
     try {
-      final position = await _weatherService.getCurrentPosition();
-      final weather = await _weatherService.getWeatherByCoordinates(
-        position.latitude,
-        position.longitude,
-      );
+      Weather fetchedWeather; // Changed name to avoid shadowing
+
+      if (mode == WeatherMode.location) {
+        // Use current location
+        final position = await _weatherService.getCurrentPosition();
+        fetchedWeather = await _weatherService.getWeatherByCoordinates(
+          position.latitude,
+          position.longitude,
+        );
+      } else {
+        // Use city name
+        fetchedWeather = await _weatherService.getWeather(city);
+      }
 
       setState(() {
-        _weather = weather;
-        _isLoading = false;
+        weather = fetchedWeather; // Fixed: use this.weather
+        isLoading = false;
       });
     } catch (e) {
       setState(() {
-        _errorMessage = e.toString();
-        _isLoading = false;
+        errorMessage = e.toString();
+        isLoading = false;
       });
     }
   }
 
   @override
-  void initState() {
-    super.initState();
-    _fetchWeather();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
+      body: SafeArea(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            if (_isLoading)
-              const LoadingWeatherWidget()
-            else if (_errorMessage != null)
-              ErrorWeatherWidget(
-                errorMessage: _errorMessage!,
-                onRetry: _fetchWeather,
-              )
-            else if (_weather != null)
-              WeatherDisplayWidget(weather: _weather!),
+            // Search bar at the top (always visible)
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: SearchCityWidget(
+                city: city,
+                onChanged: (value) {
+                  setState(() {
+                    city = value;
+                  });
+                },
+                onSearch: () {
+                  if (city.isNotEmpty) {
+                    setState(() {
+                      mode = WeatherMode.city;
+                    });
+                    fetchWeather();
+                  }
+                },
+              ),
+            ),
+            const SizedBox(width: 8),
+            // Location button
+            IconButton(
+              onPressed: () {
+                setState(() {
+                  mode = WeatherMode.location;
+                  city = ''; // Clear search when using location
+                });
+                fetchWeather();
+              },
+              icon: const Icon(Icons.my_location),
+              style: IconButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.all(16),
+              ),
+              tooltip: 'Use my location',
+            ),
+            // Weather content in the center
+            Expanded(
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    if (isLoading)
+                      const LoadingWeatherWidget()
+                    else if (errorMessage != null)
+                      ErrorWeatherWidget(
+                        errorMessage: errorMessage!,
+                        onRetry: fetchWeather,
+                      )
+                    else if (weather != null)
+                      WeatherDisplayWidget(weather: weather!),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
