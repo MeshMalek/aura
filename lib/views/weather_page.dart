@@ -1,3 +1,5 @@
+
+
 import 'package:aura/models/weather_model.dart';
 import 'package:aura/services/weather_service.dart';
 import 'package:aura/widgets/loading_weather_widget.dart';
@@ -69,9 +71,8 @@ class _WeatherPageState extends State<WeatherPage> {
               child: SearchCityWidget(
                 city: city,
                 onChanged: (value) {
-                  setState(() {
-                    city = value;
-                  });
+                  city = value;
+           
                 },
                 onSearch: () {
                   if (city.isNotEmpty) {
